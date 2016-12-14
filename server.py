@@ -173,6 +173,15 @@ class Client(threading.Thread):
     def HELP(self, cmd, session_id):
         self.client.send('214-The following commands are recognized:\r\nCWD\r\nQUIT\r\nRETR\r\nSTOR\r\nRNTO\r\nDELE\r\nRMD\r\nMKD\r\nPWD\r\nLIST\r\nHELP\r\n')
 
+    def MKD(self, cmd, session_id):
+        cwd = current_working_directory[session_id]
+        print cwd
+        base_directory_len = len(base_directory)
+        cwd_len = len(cwd)
+        dirname = cmd.split(' ')[1]
+        os.mkdir(cwd+'/'+dirname)
+        self.client.send("257 Directory created.")
+
 if __name__ == "__main__":
     read_env()
     s = Server()
