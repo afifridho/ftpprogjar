@@ -208,6 +208,13 @@ class Client(threading.Thread):
         os.remove(cwd+'/'+nama_file)
         self.client.send("250 File deleted.")
 
+    def RNTO(self, cmd, session_id):
+    	cwd = current_working_directory[session_id]
+    	source = cwd + '/' + cmd.split(' ')[1]
+    	destination = cwd + '/' + cmd.split(' ')[2]
+    	os.rename(source,destination)
+    	self.client.send('250 File renamed.')
+
 if __name__ == "__main__":
     read_env()
     s = Server()
