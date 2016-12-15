@@ -191,6 +191,18 @@ class Client(threading.Thread):
         os.rmdir(cwd+'/'+dirname)
         self.client.send("250 Directory deleted.")
 
+    def LIST(self, cmd, session_id):
+        cwd = current_working_directory[session_id]
+        print 'list:', cwd
+        listing = ''
+        for k in os.listdir(cwd):
+            if k=='':
+                break
+
+            listing = listing + k + '\r\n'
+        self.client.send(listing)
+        
+
 if __name__ == "__main__":
     read_env()
     s = Server()
