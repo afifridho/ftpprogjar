@@ -3,7 +3,6 @@ import os
 
 command_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 command_socket.connect(('127.0.0.1', 5004))
-
 session_token = "INIT"
 
 
@@ -12,20 +11,21 @@ def send_message(message):
     msg = command_socket.recv(2048)
     command_socket.send(session_token)
     msg = command_socket.recv(2048)
-    return msg
 
+    # print "a==="
+    return msg
+    # print "b==="
 def print_manual():
     print 'List of instructions:'
     print '- USER <username> : login, password will be asked'
-    print '- PWD : get current working directory'
+    print '- RETR <file_name> : Download file'
+    print '- RNTO <file_name> : Change file name'
+    print '- DELE <file_name> : Delte file'
+    print '- RMD <directory_name> : Delete directory'
+    print '- MKD <directory_name> : Make directory'
+    print '- PWD : Get current working directory'
     print '- CWD <path> : change current working directory'
-    print '- LIST <path> : list all files and folders working directory'
-    print '- MKD <path> : change current working directory'
-    print '- RMD <path> : change current working directory'
-    print '- DELE <path> : change current working directory'
-    print '- RETR <path> : change current working directory'
-    print '- STOR <path> : change current working directory'
-    print '- RNTO <path> : change current working directory'
+    print '- LIST : Directory listing'
     print '- QUIT : Exit from application'
 
 print 'Welcome to FTP'
@@ -34,7 +34,6 @@ l=''
 
 while True:
     cmd = raw_input("Enter command: ")
-
     msg = send_message(cmd)
 
     if cmd == "QUIT":
@@ -45,7 +44,6 @@ while True:
 
     # after login, we need to enter the password
     if response_code == "STOR":
-        print 'masuk tot'
         cwd = os.getcwd()
         filename = cwd + '/' + cmd.split(' ')[1]
         if os.path.isfile(filename):
@@ -62,7 +60,7 @@ while True:
             while(uploaded < ukr2):
                 tmp +=f.read(512)
                 uploaded = len(tmp)
-                print str(uploaded)+'<'+ukr
+                # print str(uploaded)+'<'+ukr
             command_socket.send(ukr+'\r\n'+tmp)
             f.close()
 
@@ -89,7 +87,7 @@ while True:
         while (downloaded < size2):
             tmp += command_socket.recv(1024)
             downloaded = len(tmp)
-            print str(downloaded)+'<'+str(size2)
+            # print str(downloaded)+'<'+str(size2)
         f.write(tmp)
         f.close()
         fo = open(filename)

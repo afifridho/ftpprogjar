@@ -98,6 +98,15 @@ class Client(threading.Thread):
         # data = ''
         while running:
             data = self.client.recv(self.size)
+
+            # print data[:1]
+
+            # if data[0] == 'S':
+            #     print "jebret"
+            #     token = self.getToken()
+            #     func('STOR', token)
+            #     print "jebret cok"
+
             print 'recv: ', self.address, data
             token = self.getToken()
             if data:
@@ -189,8 +198,11 @@ class Client(threading.Thread):
         base_directory_len = len(base_directory)
         cwd_len = len(cwd)
         dirname = cmd.split(' ')[1]
-        os.rmdir(cwd+'/'+dirname)
-        self.client.send("250 Directory deleted.")
+        if os.path.isdir(dirname):
+            os.rmdir(cwd+'/'+dirname)
+            self.client.send("250 Directory deleted.")
+        else:
+            self.client.send('450 Not allowed.')
 
     def LIST(self, cmd, session_id):
         cwd = current_working_directory[session_id]
@@ -205,16 +217,21 @@ class Client(threading.Thread):
     def DELE(self, cmd, session_id):
         cwd = current_working_directory[session_id]
         nama_file = cmd.split(' ')[1]
-        print nama_file
-        os.remove(cwd+'/'+nama_file)
-        self.client.send("250 File deleted.")
+        if os.path.isfile(nama_file):
+            os.remove(cwd+'/'+nama_file)
+            self.client.send("250 File deleted.")
+        else:
+            self.client.send('450 Not allowed.')
 
     def RNTO(self, cmd, session_id):
     	cwd = current_working_directory[session_id]
     	source = cwd + '/' + cmd.split(' ')[1]
-    	destination = cwd + '/' + cmd.split(' ')[2]
-    	os.rename(source,destination)
-    	self.client.send('250 File renamed.')
+        if os.path.isfile(source):
+            destination = cwd + '/' + cmd.split(' ')[2]
+    	    os.rename(source,destination)
+    	    self.client.send('250 File renamed.')
+        else:
+            self.client.send('450 Not allowed.')
 
     def RETR(self, cmd, session_id):
         cwd = current_working_directory[session_id]
@@ -236,6 +253,7 @@ class Client(threading.Thread):
             # print '226 Transfer Complete\r\n'+ ukr +'\r\n' + tmp 
             self.client.send('226 Transfer Complete\r\n'+ ukr +'\r\n'+ tmp)
             f.close()
+
     def STOR(self, cmd, session_id):
         print 'masuk fungsi stor'
         self.client.send('STOR asdasd')
@@ -251,7 +269,7 @@ class Client(threading.Thread):
         while(downloaded < size):
             tmp += self.client.recv(1024)
             downloaded = len(tmp)
-            print str(downloaded)+'<'+str(size)
+            # print str(downloaded)+'<'+str(size)
         # print tmp
         f.write(tmp)
         f.close()

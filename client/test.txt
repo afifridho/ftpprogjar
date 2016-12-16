@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import socket
 import sys
 import threading
@@ -240,3 +241,8 @@ if __name__ == "__main__":
     read_env()
     s = Server()
     s.run()
+=======
+
+Pengguna pembaca layar, klik di sini untuk mematikan Google Instan.
+Google
+>>>>>>> 3c0424bf4ebaa1489108d33979ea88fba0673913
