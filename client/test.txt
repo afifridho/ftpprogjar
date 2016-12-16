@@ -200,7 +200,6 @@ class Client(threading.Thread):
             if file=='':
                 break
             data+=file+'\r\n'
-        self.client.send('150 Here comes the directory listing.\r\n' +data + '226 Directory send OK.')
     
     def DELE(self, cmd, session_id):
         cwd = current_working_directory[session_id]
@@ -233,7 +232,6 @@ class Client(threading.Thread):
             while(downloaded < ukr2):
                 tmp +=f.read(512)
                 downloaded = len(tmp)  
-            self.client.send('226 Transfer Complete'+ukr+tmp)
             f.close()
 
 
