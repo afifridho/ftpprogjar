@@ -14,6 +14,10 @@ def send_message(message):
 
 while True:
     cmd = raw_input("Enter command: ")
+
+    if cmd == "QUIT":
+        break
+
     msg = send_message(cmd)
 
     response_code = msg.split(' ')[0]
@@ -31,4 +35,6 @@ while True:
     else:
         print msg
 
+
+print "221 Goodbye."
 command_socket.close()
