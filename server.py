@@ -11,6 +11,12 @@ import datetime
 config = {'HOST': 'localhost', 'PORT': 5000, 'USERNAME': 'username', 'PASSWORD': 'password'}
 sessions = {}
 
+#list of commands that need authentication
+commands_need_authentication = {"PWD", "CWD"}
+
+#list of commands that must be as guest (not authenticated)
+commands_need_guest = {"USER", "PASS"}
+
 #read .env file and store it to config dictionary
 def read_env():
     lines = [line.rstrip('\n') for line in open('.env')]
@@ -19,14 +25,16 @@ def read_env():
         config[stripped_line[0]] = stripped_line[1]
 
 def create_session():
-    session_id = uuid.uuid1()
+    session_id = str(uuid.uuid1())
     sessions[session_id] = datetime.datetime.now()
+    return session_id
 
 def auth(session_id):
-    if (sessions[session_id]):
-        return True
-    else:
+    stored_session_id = sessions.get(session_id)
+    if (stored_session_id == None):
         return False
+    else:
+        return True
 
 def destroy_session(session_id):
     if (auth(session_id)):
@@ -86,11 +94,55 @@ class Client(threading.Thread):
         while running:
             data = self.client.recv(self.size)
             print 'recv: ', self.address, data
+            token = self.getToken()
             if data:
-                self.client.send(data)
+                func = getattr(self, data.split(' ')[0])
+                if data.split(' ')[0] in commands_need_guest:
+                    if self.authenticate(token):
+                        self.client.send("Need to be a guest")
+                        continue
+
+                if data.split(' ')[0] in commands_need_authentication:
+                    if not self.authenticate(token):
+                        self.client.send("Need authentication")
+                        continue
+                func(data)
+                # self.client.send(data)
+
             else:
                 self.client.close()
                 running = 0
+
+    def getToken(self):
+        self.client.send("350 Send your token")
+        token = self.client.recv(2048)
+        return token
+
+    def authenticate(self, token):
+        if auth(token):
+            return True
+        else:
+            return False
+
+    def USER(self, cmd):
+        cmds = cmd.split(' ')
+        if (cmds[1] != config['USERNAME']):
+            self.client.send("430 Invalid username")
+        else:
+            self.client.send("331 Please specify the password.")
+
+    def PASS(self, cmd):
+        cmds = cmd.split(' ')
+        if (cmds[1] != config['PASSWORD']):
+            self.client.send("430 Invalid password")
+        else:
+            session_id = create_session()
+            self.client.send("230 Login successful.")
+            self.client.send(session_id)
+
+    def CWD(self, cmd):
+        print "directory changed"
+        self.client.send("250 OK.")
 
 if __name__ == "__main__":
     read_env()
