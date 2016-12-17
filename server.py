@@ -4,11 +4,38 @@ import select
 import socket
 import sys
 import threading
+import uuid
+import datetime
+
+#here is default configuration
+config = {'HOST': 'localhost', 'PORT': 5000, 'USERNAME': 'username', 'PASSWORD': 'password'}
+sessions = {}
+
+#read .env file and store it to config dictionary
+def read_env():
+    lines = [line.rstrip('\n') for line in open('.env')]
+    for line in lines:
+        stripped_line = line.split('=')
+        config[stripped_line[0]] = stripped_line[1]
+
+def create_session():
+    session_id = uuid.uuid1()
+    sessions[session_id] = datetime.datetime.now()
+
+def auth(session_id):
+    if (sessions[session_id]):
+        return True
+    else:
+        return False
+
+def destroy_session(session_id):
+    if (auth(session_id)):
+        del sessions[session_id]
 
 class Server:
     def __init__(self):
-        self.host = 'localhost'
-        self.port = 5000
+        self.host = config['HOST']
+        self.port = int(config['PORT'])
         self.backlog = 5
         self.size = 1024
         self.server = None
@@ -24,6 +51,7 @@ class Server:
         self.open_socket()
         input = [self.server, sys.stdin]
         running = 1
+        print "Server is running on " + config['HOST'] + ":" + config['PORT']
         while running:
             inputready,outputready,exceptready = select.select(input,[],[])
 
@@ -65,5 +93,6 @@ class Client(threading.Thread):
                 running = 0
 
 if __name__ == "__main__":
+    read_env()
     s = Server()
     s.run()
