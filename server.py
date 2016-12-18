@@ -15,7 +15,7 @@ current_working_directory = {}
 base_directory = os.getcwd()
 
 #list of commands that need authentication
-commands_need_authentication = {"PWD", "CWD"}
+commands_need_authentication = {"PWD", "CWD", "RETR", "STOR", "RNTO", "DELE", "RMD", "MKD", "LIST"}
 
 #list of commands that must be as guest (not authenticated)
 commands_need_guest = {"USER", "PASS"}
