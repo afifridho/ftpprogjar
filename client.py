@@ -13,6 +13,16 @@ def send_message(message):
     msg = command_socket.recv(2048)
     return msg
 
+def print_manual():
+    print 'List of instructions:'
+    print '- USER <username> : login, password will be asked'
+    print '- PWD : Get current working directory'
+    print '- CWD <path> : change current working directory'
+    print '- QUIT : Exit from application'
+
+print 'Welcome to FTP'
+print_manual()
+
 while True:
     cmd = raw_input("Enter command: ")
 
