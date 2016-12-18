@@ -6,10 +6,13 @@ import sys
 import threading
 import uuid
 import datetime
+import os
 
 #here is default configuration
 config = {'HOST': 'localhost', 'PORT': 5000, 'USERNAME': 'username', 'PASSWORD': 'password'}
 sessions = {}
+current_working_directory = {}
+base_directory = os.getcwd()
 
 #list of commands that need authentication
 commands_need_authentication = {"PWD", "CWD"}
@@ -27,6 +30,7 @@ def read_env():
 def create_session():
     session_id = str(uuid.uuid1())
     sessions[session_id] = datetime.datetime.now()
+    current_working_directory[session_id] = os.getcwd()
     return session_id
 
 def auth(session_id):
@@ -106,7 +110,7 @@ class Client(threading.Thread):
                     if not self.authenticate(token):
                         self.client.send("Need authentication")
                         continue
-                func(data)
+                func(data, token)
                 # self.client.send(data)
 
             else:
@@ -124,14 +128,14 @@ class Client(threading.Thread):
         else:
             return False
 
-    def USER(self, cmd):
+    def USER(self, cmd, session_id):
         cmds = cmd.split(' ')
         if (cmds[1] != config['USERNAME']):
             self.client.send("430 Invalid username")
         else:
             self.client.send("331 Please specify the password.")
 
-    def PASS(self, cmd):
+    def PASS(self, cmd, session_id):
         cmds = cmd.split(' ')
         if (cmds[1] != config['PASSWORD']):
             self.client.send("430 Invalid password")
@@ -140,9 +144,31 @@ class Client(threading.Thread):
             self.client.send("230 Login successful.")
             self.client.send(session_id)
 
-    def CWD(self, cmd):
-        print "directory changed"
-        self.client.send("250 OK.")
+    def PWD(self, cmd, session_id):
+        cwd = current_working_directory[session_id]
+        base_directory_len = len(base_directory)
+        cwd_len = len(cwd)
+        if cwd[cwd_len - 1] != '/':
+            cwd += '/'
+        cwd = cwd[base_directory_len:]
+        self.client.send("250 " + cwd)
+
+    def CWD(self, cmd, session_id):
+        cmds = cmd.split(' ')
+        target_directory = cmds[1]
+
+        if (target_directory[0] == '/'):
+            # Client define absolute path
+            target_directory = os.getcwd() + target_directory
+        else:
+            # Client define relative path
+            target_directory = current_working_directory[session_id] + '/' + target_directory
+        print "target directory = " + target_directory
+        if os.path.isdir(target_directory):
+            current_working_directory[session_id] = target_directory
+            self.client.send("250 Directory changed")
+        else:
+            self.client.send("450 Directory doesn't exist")
 
 if __name__ == "__main__":
     read_env()

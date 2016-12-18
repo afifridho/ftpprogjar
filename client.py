@@ -5,6 +5,7 @@ command_socket.connect(('127.0.0.1', 5000))
 
 session_token = "INIT"
 
+
 def send_message(message):
     command_socket.send(message)
     msg = command_socket.recv(2048)
