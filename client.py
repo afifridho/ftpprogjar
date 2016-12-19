@@ -7,24 +7,11 @@ session_token = "INIT"
 
 
 def send_message(message):
-    # data=''
     command_socket.send(message)
     msg = command_socket.recv(2048)
-    # print "sent ke 2"
     command_socket.send(session_token)
-    # print "masuk msg 2"
     msg = command_socket.recv(2048)
-    # while msg:
-    #     print "masuk while"
-    #     tmp = command_socket.recv(2048)
-    #     if tmp == '':
-    #         print "masuk if"
-    #         break
-        # data=msg+tmp
-        # print "================"
-        # msg+=data
-
-    # print msg
+    
     return msg
 
 def print_manual():
@@ -36,6 +23,7 @@ def print_manual():
 
 print 'Welcome to FTP'
 print_manual()
+l=''
 
 while True:
     cmd = raw_input("Enter command: ")
@@ -44,6 +32,7 @@ while True:
         break
 
     msg = send_message(cmd)
+    filename = cmd.split(' ')[1]
 
     response_code = msg.split(' ')[0]
 
@@ -58,7 +47,34 @@ while True:
             token = command_socket.recv(2048)
             session_token = token
 
-    # if response_code = ""
+    if response_code == "226":
+        f = open(filename,'wb')
+        f.write(msg)
+        # print msg
+        size = msg.split('\r\n')[1]
+        size2 = int(size)- 2048
+        print size2 
+        downloaded = 0
+        tmp = ''
+        while (downloaded < size2):
+            tmp += command_socket.recv(1024)
+            downloaded = len(tmp)
+            print str(downloaded)+'<'+str(size2)
+        f.write(tmp)
+        f.close()
+        fo = open(filename)
+        output = []
+        for line in fo:
+            if not "226" in line:
+                if not size in line:
+                    output.append(line)
+        fo.close()
+        fo = open(filename, 'w')
+        fo.writelines(output)
+        fo.close()
+        print "Done Receiving"
+
+        
     else:
         print msg
 

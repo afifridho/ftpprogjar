@@ -146,11 +146,11 @@ class Client(threading.Thread):
 
     def PWD(self, cmd, session_id):
         cwd = current_working_directory[session_id]
-        base_directory_len = len(base_directory)
-        cwd_len = len(cwd)
-        if cwd[cwd_len - 1] != '/':
-            cwd += '/'
-        cwd = cwd[base_directory_len:]
+        # base_directory_len = len(base_directory)
+        # cwd_len = len(cwd)
+        # if cwd[cwd_len - 1] != '/':
+        #     cwd += '/'
+        # cwd = cwd[base_directory_len:]
         self.client.send("250 " + cwd)
 
     def CWD(self, cmd, session_id):
@@ -214,6 +214,29 @@ class Client(threading.Thread):
     	destination = cwd + '/' + cmd.split(' ')[2]
     	os.rename(source,destination)
     	self.client.send('250 File renamed.')
+
+    def RETR(self, cmd, session_id):
+        cwd = current_working_directory[session_id]
+        filename = cwd + '/' + cmd.split(' ')[1]
+        if os.path.isfile(filename):
+            size = os.path.getsize(filename)
+            f = open(filename, 'rb')
+            ukr = str(size)
+            ukr2 = int(size)
+            namafile = "file_name : " + filename + '\r\n'
+            filesize = "file_size : " + ukr + '\r\n'
+            print namafile + filesize
+            # print l
+            downloaded = 0
+            tmp = ''
+            while(downloaded < ukr2):
+                tmp +=f.read(512)
+                downloaded = len(tmp)
+            # print '226 Transfer Complete\r\n'+ ukr +'\r\n' + tmp 
+            self.client.send('226 Transfer Complete\r\n'+ ukr +'\r\n'+ tmp)
+            f.close()
+
+
 
 if __name__ == "__main__":
     read_env()
