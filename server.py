@@ -146,11 +146,11 @@ class Client(threading.Thread):
 
     def PWD(self, cmd, session_id):
         cwd = current_working_directory[session_id]
-        # base_directory_len = len(base_directory)
-        # cwd_len = len(cwd)
-        # if cwd[cwd_len - 1] != '/':
-        #     cwd += '/'
-        # cwd = cwd[base_directory_len:]
+        base_directory_len = len(base_directory)
+        cwd_len = len(cwd)
+        if cwd[cwd_len - 1] != '/':
+            cwd += '/'
+        cwd = cwd[base_directory_len:]
         self.client.send("250 " + cwd)
 
     def CWD(self, cmd, session_id):
@@ -190,6 +190,23 @@ class Client(threading.Thread):
         dirname = cmd.split(' ')[1]
         os.rmdir(cwd+'/'+dirname)
         self.client.send("250 Directory deleted.")
+
+    def LIST(self, cmd, session_id):
+        # self.client.send('150 Here comes the directory listing.\r\n')
+        cwd = current_working_directory[session_id]
+        # print cwd
+        # base_directory_len = len(base_directory)
+        # cwd_len = len(cwd)
+        data=''
+        dirs = os.listdir(cwd+'/')
+        for file in dirs:
+            if file=='':
+                break
+            data+=file+'\r\n'
+
+        self.client.send('150 Here comes the directory listing.\r\n' +data + '226 Directory send OK.')
+        # self.client.send('226 Directory send OK.\r\n')
+
 
 if __name__ == "__main__":
     read_env()

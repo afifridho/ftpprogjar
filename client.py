@@ -7,10 +7,24 @@ session_token = "INIT"
 
 
 def send_message(message):
+    # data=''
     command_socket.send(message)
     msg = command_socket.recv(2048)
+    # print "sent ke 2"
     command_socket.send(session_token)
+    # print "masuk msg 2"
     msg = command_socket.recv(2048)
+    # while msg:
+    #     print "masuk while"
+    #     tmp = command_socket.recv(2048)
+    #     if tmp == '':
+    #         print "masuk if"
+    #         break
+        # data=msg+tmp
+        # print "================"
+        # msg+=data
+
+    # print msg
     return msg
 
 def print_manual():
@@ -43,6 +57,8 @@ while True:
             # if login success, receive and save the session_token
             token = command_socket.recv(2048)
             session_token = token
+
+    # if response_code = ""
     else:
         print msg
 
