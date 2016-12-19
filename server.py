@@ -170,6 +170,9 @@ class Client(threading.Thread):
         else:
             self.client.send("450 Directory doesn't exist")
 
+    def HELP(self, cmd, session_id):
+        self.client.send('214-The following commands are recognized:\r\nCWD\r\nQUIT\r\nRETR\r\nSTOR\r\nRNTO\r\nDELE\r\nRMD\r\nMKD\r\nPWD\r\nLIST\r\nHELP\r\n')
+
 if __name__ == "__main__":
     read_env()
     s = Server()
