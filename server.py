@@ -207,6 +207,12 @@ class Client(threading.Thread):
         self.client.send('150 Here comes the directory listing.\r\n' +data + '226 Directory send OK.')
         # self.client.send('226 Directory send OK.\r\n')
 
+    def RNTO(self, cmd, session_id):
+    	cwd = current_working_directory[session_id]
+    	source = cwd + '/' + cmd.split(' ')[1]
+    	destination = cwd + '/' + cmd.split(' ')[2]
+    	os.rename(source,destination)
+    	self.client.send('250 File renamed.')
 
 if __name__ == "__main__":
     read_env()
