@@ -97,6 +97,15 @@ class Client(threading.Thread):
         running = 1
         while running:
             data = self.client.recv(self.size)
+
+            # print data[:1]
+
+            # if data[0] == 'S':
+            #     print "jebret"
+            #     token = self.getToken()
+            #     func('STOR', token)
+            #     print "jebret cok"
+
             print 'recv: ', self.address, data
             token = self.getToken()
             if data:
@@ -146,11 +155,6 @@ class Client(threading.Thread):
 
     def PWD(self, cmd, session_id):
         cwd = current_working_directory[session_id]
-        # base_directory_len = len(base_directory)
-        # cwd_len = len(cwd)
-        # if cwd[cwd_len - 1] != '/':
-        #     cwd += '/'
-        # cwd = cwd[base_directory_len:]
         self.client.send("250 " + cwd)
 
     def CWD(self, cmd, session_id):
@@ -188,8 +192,11 @@ class Client(threading.Thread):
         base_directory_len = len(base_directory)
         cwd_len = len(cwd)
         dirname = cmd.split(' ')[1]
-        os.rmdir(cwd+'/'+dirname)
-        self.client.send("250 Directory deleted.")
+        if os.path.isdir(dirname):
+            os.rmdir(cwd+'/'+dirname)
+            self.client.send("250 Directory deleted.")
+        else:
+            self.client.send('450 Not allowed.')
 
     def LIST(self, cmd, session_id):
         cwd = current_working_directory[session_id]
@@ -242,12 +249,6 @@ class Client(threading.Thread):
             # print '226 Transfer Complete\r\n'+ ukr +'\r\n' + tmp 
             self.client.send('226 Transfer Complete\r\n'+ ukr +'\r\n'+ tmp)
             f.close()
-
-    # def STOR(self, cmd, session_id):
-    #     cwd = current_working_directory[session_id]
-    #     self.client.send("jebret hahaha\r\n")
-    #     filename = cwd + '/' + cmd.split(' ')[1] 
-
 
 if __name__ == "__main__":
     read_env()
