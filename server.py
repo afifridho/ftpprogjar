@@ -204,9 +204,13 @@ class Client(threading.Thread):
     def DELE(self, cmd, session_id):
         cwd = current_working_directory[session_id]
         nama_file = cmd.split(' ')[1]
-        print nama_file
-        os.remove(cwd+'/'+nama_file)
-        self.client.send("250 File deleted.")
+        if os.path.isfile(nama_file):
+            print "masuk cok"
+            os.remove(cwd+'/'+nama_file)
+            self.client.send("250 File deleted.")
+        else:
+            print "kuro cok"
+            self.client.send('450 Not allowed.')
 
     def RNTO(self, cmd, session_id):
     	cwd = current_working_directory[session_id]

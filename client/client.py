@@ -12,9 +12,9 @@ def send_message(message):
     msg = command_socket.recv(2048)
     command_socket.send(session_token)
     msg = command_socket.recv(2048)
-    
+    # print "a==="
     return msg
-
+    # print "b==="
 def print_manual():
     print 'List of instructions:'
     print '- USER <username> : login, password will be asked'
@@ -48,7 +48,8 @@ while True:
         # need to send password
         cmd = raw_input("Enter password: ")
         msg = send_message("PASS " + cmd)
-        print msg
+        # print msg
+        # print "c==="
         if msg.split(' ')[0] == "230":
             # if login success, receive and save the session_token
             token = command_socket.recv(2048)
