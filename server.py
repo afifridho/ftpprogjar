@@ -143,7 +143,7 @@ class Client(threading.Thread):
         cwd_len = len(cwd)
         if cwd[cwd_len - 1] != '/':
             cwd += '/'
-        cwd = cwd[base_directory_len:]
+        cwd = cwd[base_directory_len:]        
         self.client.send("250 " + cwd)
 
     def CWD(self, cmd, session_id):
@@ -261,6 +261,10 @@ class Client(threading.Thread):
         fo = open(filename, 'w')
         fo.writelines(output)
         fo.close()
+
+    def QUIT(self, cmd, session_id):
+        self.client.send("221 Goodbye.")
+        self.client.close()
 
 if __name__ == "__main__":
     read_env()

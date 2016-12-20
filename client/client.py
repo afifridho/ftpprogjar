@@ -1,8 +1,9 @@
 import socket
 import os
+# import sys
 
 command_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-command_socket.connect(('127.0.0.1', 5004))
+command_socket.connect(('localhost', 5004))
 session_token = "INIT"
 
 
@@ -19,6 +20,7 @@ def print_manual():
     print '- USER <username> : login, password will be asked'
     print '- RETR <file_name> : Download file'
     print '- RNTO <file_name> : Change file name'
+    print '- STOR <file_name> : Upload file'
     print '- DELE <file_name> : Delte file'
     print '- RMD <directory_name> : Delete directory'
     print '- MKD <directory_name> : Make directory'
@@ -34,11 +36,12 @@ l=''
 while True:
     cmd = raw_input("Enter command: ")
     
-    if cmd.split(' ')[0] in ['USER','RETR','RNTO','DELE','RMD','MKD','PWD','CWD','LIST','QUIT']:
-
+    if cmd.split(' ')[0] in ['USER','RETR','RNTO','DELE','RMD','MKD','PWD','CWD','LIST', 'QUIT']:
         msg = send_message(cmd)
-        if cmd == "QUIT":
-            break
+
+        # if cmd == "QUIT":
+
+        #     break
 
         response_code = msg.split(' ')[0]
         # print response_code
@@ -75,6 +78,11 @@ while True:
                 token = command_socket.recv(2048)
                 session_token = token
 
+        if response_code == "221":
+            command_socket.close()
+            # sys.exit()
+            break
+
         if response_code == "226":
             filename = cmd.split(' ')[1]
             f = open(filename,'wb')
@@ -99,6 +107,9 @@ while True:
             fo.writelines(output)
             fo.close()
             print "Done Receiving"
+
+        # else if cmd == "QUIT":
+        #     break
 
         else:
             print msg
