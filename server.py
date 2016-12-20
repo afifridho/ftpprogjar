@@ -205,19 +205,21 @@ class Client(threading.Thread):
         cwd = current_working_directory[session_id]
         nama_file = cmd.split(' ')[1]
         if os.path.isfile(nama_file):
-            print "masuk cok"
             os.remove(cwd+'/'+nama_file)
             self.client.send("250 File deleted.")
         else:
-            print "kuro cok"
             self.client.send('450 Not allowed.')
 
     def RNTO(self, cmd, session_id):
     	cwd = current_working_directory[session_id]
     	source = cwd + '/' + cmd.split(' ')[1]
-    	destination = cwd + '/' + cmd.split(' ')[2]
-    	os.rename(source,destination)
-    	self.client.send('250 File renamed.')
+        if os.path.isfile(source):
+            destination = cwd + '/' + cmd.split(' ')[2]
+    	    os.rename(source,destination)
+    	    self.client.send('250 File renamed.')
+        else:
+            self.client.send('450 Not allowed.')
+
 
     def RETR(self, cmd, session_id):
         cwd = current_working_directory[session_id]
