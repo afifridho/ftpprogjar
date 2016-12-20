@@ -250,6 +250,47 @@ class Client(threading.Thread):
             self.client.send('226 Transfer Complete\r\n'+ ukr +'\r\n'+ tmp)
             f.close()
 
+    # def STOR(self, cmd, session_id):
+    #     cwd = current_working_directory[session_id]
+    #     self.client.send("jebret a cok\r\n")
+    #     filename = cwd + '/' + cmd.split(' ')[1]
+
+    # def clean_file(self, cmd, session_id):
+    #     yourfile = self.cleaned_data.get("your_filename_on_template", False)
+    #     filetype = magic.from_buffer(yourfile.read())
+    def start_datasock(self): 
+        if self.pasv_mode: 
+            self.datasock, addr = self.servsock.accept() 
+            print 'connect:', addr 
+        else: 
+            self.datasock=socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
+            self.datasock.connect((self.dataAddr,self.dataPort))
+
+    def stop_datasock(self): 
+        self.datasock.close() 
+        if self.pasv_mode: 
+            self.servsock.close() 
+
+    def STOR(self,cmd): 
+        fn=os.path.join(self.cwd,cmd[5:-2]) 
+        print 'Uplaoding:',fn 
+        if self.mode=='I': 
+            fo=open(fn,'wb') 
+        else: 
+            fo=open(fn,'w') 
+            self.conn.send('150 Opening data connection.\r\n') 
+            self.start_datasock() 
+            while True: 
+                data=self.datasock.recv(1024) 
+                if not data: 
+                    break 
+                fo.write(data) 
+                fo.close() 
+            self.stop_datasock() 
+            self.conn.send('226 Transfer complete.\r\n')
+
+
+
 if __name__ == "__main__":
     read_env()
     s = Server()
