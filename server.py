@@ -218,6 +218,7 @@ class Client(threading.Thread):
     def RETR(self, cmd, session_id):
         cwd = current_working_directory[session_id]
         filename = cwd + '/' + cmd.split(' ')[1]
+
         if os.path.isfile(filename):
             size = os.path.getsize(filename)
             f = open(filename, 'rb')
@@ -236,6 +237,10 @@ class Client(threading.Thread):
             self.client.send('226 Transfer Complete\r\n'+ ukr +'\r\n'+ tmp)
             f.close()
 
+    # def STOR(self, cmd, session_id):
+    #     cwd = current_working_directory[session_id]
+    #     self.client.send("jebret hahaha\r\n")
+    #     filename = cwd + '/' + cmd.split(' ')[1] 
 
 
 if __name__ == "__main__":

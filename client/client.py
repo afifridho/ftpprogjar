@@ -1,4 +1,5 @@
 import socket
+import os
 
 command_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 command_socket.connect(('127.0.0.1', 5000))
@@ -17,8 +18,14 @@ def send_message(message):
 def print_manual():
     print 'List of instructions:'
     print '- USER <username> : login, password will be asked'
+    print '- RETR <file_name> : Download file'
+    print '- RNTO <file_name> : Change file name'
+    print '- DELE <file_name> : Delte file'
+    print '- RMD <directory_name> : Delete directory'
+    print '- MKD <directory_name> : Make directory'
     print '- PWD : Get current working directory'
     print '- CWD <path> : change current working directory'
+    print '- LIST : Directory listing'
     print '- QUIT : Exit from application'
 
 print 'Welcome to FTP'
@@ -32,7 +39,7 @@ while True:
         break
 
     msg = send_message(cmd)
-    filename = cmd.split(' ')[1]
+    # filename = cmd.split(' ')[1]
 
     response_code = msg.split(' ')[0]
 
@@ -48,6 +55,7 @@ while True:
             session_token = token
 
     if response_code == "226":
+        filename = cmd.split(' ')[1]
         f = open(filename,'wb')
         f.write(msg)
         # print msg
@@ -74,6 +82,21 @@ while True:
         fo.close()
         print "Done Receiving"
 
+    # if response_code == "jebret":
+    #     print "masuk gan"
+    #     cwd = os.getcwd()
+    #     nama_file = cwd + '/' + cmd.split(' ')[1]
+
+    #     with open (nama_file, 'rb') as f:
+    #         print "masuk if"
+    #         data = ""
+    #         data = f.read(1024)
+    #         while data:
+    #             print "masuk while"
+    #             command_socket.send(data)
+    #             data = f.read(1024)
+    #         print data
+    #     f.close()
         
     else:
         print msg
