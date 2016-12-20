@@ -8,19 +8,15 @@ import uuid
 import datetime
 import os
 
-#here is default configuration
 config = {'HOST': 'localhost', 'PORT': 5004,'USERNAME': 'username', 'PASSWORD': 'password'}
 sessions = {}
 current_working_directory = {}
 base_directory = os.getcwd()
 
-#list of commands that need authentication
 commands_need_authentication = {"PWD", "CWD", "RETR", "STOR", "RNTO", "DELE", "RMD", "MKD", "LIST"}
 
-#list of commands that must be as guest (not authenticated)
 commands_need_guest = {"USER", "PASS"}
 
-#read .env file and store it to config dictionary
 def read_env():
     lines = [line.rstrip('\n') for line in open('.env')]
     for line in lines:
@@ -80,8 +76,6 @@ class Server:
                     junk = sys.stdin.readline()
                     running = 0
 
-        # close all threads
-
         self.server.close()
         for c in self.threads:
             c.join()
@@ -95,18 +89,8 @@ class Client(threading.Thread):
 
     def run(self):
         running = 1
-        # data = ''
         while running:
             data = self.client.recv(self.size)
-
-            # print data[:1]
-
-            # if data[0] == 'S':
-            #     print "jebret"
-            #     token = self.getToken()
-            #     func('STOR', token)
-            #     print "jebret cok"
-
             print 'recv: ', self.address, data
             token = self.getToken()
             if data:
@@ -121,7 +105,6 @@ class Client(threading.Thread):
                         self.client.send("Need authentication")
                         continue
                 func(data, token)
-                # self.client.send(data)
 
             else:
                 self.client.close()
@@ -156,11 +139,11 @@ class Client(threading.Thread):
 
     def PWD(self, cmd, session_id):
         cwd = current_working_directory[session_id]
-        # base_directory_len = len(base_directory)
-        # cwd_len = len(cwd)
-        # if cwd[cwd_len - 1] != '/':
-        #     cwd += '/'
-        # cwd = cwd[base_directory_len:]
+        base_directory_len = len(base_directory)
+        cwd_len = len(cwd)
+        if cwd[cwd_len - 1] != '/':
+            cwd += '/'
+        cwd = cwd[base_directory_len:]
         self.client.send("250 " + cwd)
 
     def CWD(self, cmd, session_id):
@@ -168,10 +151,8 @@ class Client(threading.Thread):
         target_directory = cmds[1]
 
         if (target_directory[0] == '/'):
-            # Client define absolute path
             target_directory = os.getcwd() + target_directory
         else:
-            # Client define relative path
             target_directory = current_working_directory[session_id] + '/' + target_directory
         print "target directory = " + target_directory
         if os.path.isdir(target_directory):
@@ -202,7 +183,7 @@ class Client(threading.Thread):
             os.rmdir(cwd+'/'+dirname)
             self.client.send("250 Directory deleted.")
         else:
-            self.client.send('450 Not allowed.')
+            self.client.send("450 Directory doesn't exist")
 
     def LIST(self, cmd, session_id):
         cwd = current_working_directory[session_id]
@@ -221,7 +202,7 @@ class Client(threading.Thread):
             os.remove(cwd+'/'+nama_file)
             self.client.send("250 File deleted.")
         else:
-            self.client.send('450 Not allowed.')
+            self.client.send("450 File doesn't exist.")
 
     def RNTO(self, cmd, session_id):
     	cwd = current_working_directory[session_id]
@@ -231,7 +212,7 @@ class Client(threading.Thread):
     	    os.rename(source,destination)
     	    self.client.send('250 File renamed.')
         else:
-            self.client.send('450 Not allowed.')
+            self.client.send("450 File doesn't exist.")
 
     def RETR(self, cmd, session_id):
         cwd = current_working_directory[session_id]
@@ -250,13 +231,13 @@ class Client(threading.Thread):
             while(downloaded < ukr2):
                 tmp +=f.read(512)
                 downloaded = len(tmp)
-            # print '226 Transfer Complete\r\n'+ ukr +'\r\n' + tmp 
             self.client.send('226 Transfer Complete\r\n'+ ukr +'\r\n'+ tmp)
             f.close()
+        else:
+            self.client.send("450 File doesn't exist.")
 
     def STOR(self, cmd, session_id):
-        print 'masuk fungsi stor'
-        self.client.send('STOR asdasd')
+        self.client.send('151 File status okay; about to open data connection.')
         cwd = current_working_directory[session_id]
         filename = cwd + '/' + cmd.split(' ')[1]
         f = open(filename, 'wb')
@@ -269,8 +250,6 @@ class Client(threading.Thread):
         while(downloaded < size):
             tmp += self.client.recv(1024)
             downloaded = len(tmp)
-            # print str(downloaded)+'<'+str(size)
-        # print tmp
         f.write(tmp)
         f.close()
         fo = open(filename)
@@ -282,7 +261,6 @@ class Client(threading.Thread):
         fo = open(filename, 'w')
         fo.writelines(output)
         fo.close()
-
 
 if __name__ == "__main__":
     read_env()
